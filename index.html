@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spend Simulator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .money-display {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .money-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #2ecc71;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .item {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #eee;
+        }
+        
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .item-price {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .item-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .purchase-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 5px;
+            font-size: 1.5rem;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .category-title {
+            grid-column: 1 / -1;
+            font-size: 1.5rem;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spend Simulator</h1>
+            <div class="subtitle">How would you spend $100 billion?</div>
+        </header>
+        
+        <div class="money-display">
+            <div>You have:</div>
+            <div class="money-amount" id="money">$100,000,000,000</div>
+            <div>left to spend</div>
+        </div>
+        
+        <div class="items-grid" id="items">
+            <!-- Items will be added here by JavaScript -->
+        </div>
+        
+        <div class="purchase-animation" id="purchase-animation"></div>
+    </div>
+
+    <script>
+        // Initial money amount (100 billion)
+        let money = 100000000000;
+        
+        // All items with reliable image URLs
+        const items = [
+            // Vehicles
+            {
+                name: "Fleet of Supercars",
+                price: 10000000,
+                description: "One for every day of the week",
+                image: "https://images.unsplash.com/photo-1504215680853-026ed2a45def?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Vehicles"
+            },
+            {
+                name: "Super Yacht",
+                price: 150000000,
+                description: "500 feet of luxury on the seas",
+                image: "https://images.unsplash.com/photo-1582721478779-c757e2310bd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Vehicles"
+            },
+            {
+                name: "Luxury Jet",
+                price: 80000000,
+                description: "Fly anywhere in style",
+                image: "https://images.unsplash.com/photo-1556388158-158ea5ccacbd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Vehicles"
+            },
+            {
+                name: "Military Tank",
+                price: 9000000,
+                description: "For your personal security",
+                image: "https://images.unsplash.com/photo-1584735422189-080e37d6a702?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Vehicles"
+            },
+            
+            // Real Estate
+            {
+                name: "Private Island",
+                price: 50000000,
+                description: "Your own tropical paradise",
+                image: "https://images.unsplash.com/photo-1545579133-99bb5ab189bd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Real Estate"
+            },
+            {
+                name: "Skyscraper",
+                price: 1000000000,
+                description: "Put your name on the skyline",
+                image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Real Estate"
+            },
+            {
+                name: "Mountain Chalet",
+                price: 25000000,
+                description: "Luxury retreat in the Alps",
+                image: "https://images.unsplash.com/photo-1483721310020-03333e577078?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Real Estate"
+            },
+            
+            // Entertainment
+            {
+                name: "Sports Team",
+                price: 2000000000,
+                description: "Own your favorite franchise",
+                image: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Entertainment"
+            },
+            {
+                name: "Movie Studio",
+                price: 500000000,
+                description: "Produce your own films",
+                image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Entertainment"
+            },
+            {
+                name: "Private Concert",
+                price: 2000000,
+                description: "Any artist for one night",
+                image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Entertainment"
+            },
+            
+            // Luxury
+            {
+                name: "Diamond Ring",
+                price: 5000000,
+                description: "The most expensive jewelry",
+                image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Luxury"
+            },
+            {
+                name: "Gold Toilet",
+                price: 1000000,
+                description: "Because why not?",
+                image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Luxury"
+            },
+            {
+                name: "Designer Wardrobe",
+                price: 500000,
+                description: "Outfits for every occasion",
+                image: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Luxury"
+            },
+            
+            // Unique
+            {
+                name: "Space Vacation",
+                price: 30000000,
+                description: "Trip to the edge of space",
+                image: "https://images.unsplash.com/photo-1454789548928-9efd52dc4031?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Unique"
+            },
+            {
+                name: "Famous Painting",
+                price: 450000000,
+                description: "Own a masterpiece",
+                image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Unique"
+            },
+            {
+                name: "Private Zoo",
+                price: 15000000,
+                description: "Exotic animals collection",
+                image: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                category: "Unique"
+            }
+        ];
+        
+        // Format money with commas
+        function formatMoney(amount) {
+            return '$' + amount.toLocaleString();
+        }
+        
+        // Update money display
+        function updateMoney() {
+            document.getElementById('money').textContent = formatMoney(money);
+        }
+        
+        // Show purchase animation
+        function showPurchaseAnimation(itemName, itemPrice) {
+            const animation = document.getElementById('purchase-animation');
+            animation.textContent = `-${formatMoney(itemPrice)} for ${itemName}`;
+            animation.style.opacity = 1;
+            
+            setTimeout(() => {
+                animation.style.opacity = 0;
+            }, 1000);
+        }
+        
+        // Initialize the app
+        function init() {
+            updateMoney();
+            
+            const itemsGrid = document.getElementById('items');
+            
+            // Group items by category
+            const categories = {};
+            items.forEach(item => {
+                if (!categories[item.category]) {
+                    categories[item.category] = [];
+                }
+                categories[item.category].push(item);
+            });
+            
+            // Create category sections
+            for (const [category, categoryItems] of Object.entries(categories)) {
+                // Add category title
+                const categoryTitle = document.createElement('div');
+                categoryTitle.className = 'category-title';
+                categoryTitle.textContent = category;
+                itemsGrid.appendChild(categoryTitle);
+                
+                // Add items for this category
+                categoryItems.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'item';
+                    
+                    itemElement.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" class="item-image" 
+                             onerror="this.src='https://via.placeholder.com/500x300?text=${encodeURIComponent(item.name)}'">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">${formatMoney(item.price)}</div>
+                        <div class="item-description">${item.description}</div>
+                    `;
+                    
+                    itemElement.addEventListener('click', () => {
+                        if (money >= item.price) {
+                            money -= item.price;
+                            updateMoney();
+                            showPurchaseAnimation(item.name, item.price);
+                        } else {
+                            alert("Not enough money!");
+                        }
+                    });
+                    
+                    itemsGrid.appendChild(itemElement);
+                });
+            }
+        }
+        
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
